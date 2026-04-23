@@ -23,7 +23,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Que tanto conoces tu propio Spotify?'), findsOneWidget);
+    expect(find.text('Tu Spotify te conoce.\nLa pregunta es si tu tambien.'), findsOneWidget);
     expect(find.text('Iniciar con Spotify'), findsOneWidget);
   });
 }

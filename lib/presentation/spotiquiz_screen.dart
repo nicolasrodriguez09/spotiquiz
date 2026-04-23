@@ -93,76 +93,28 @@ class _LandingView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: const [
-              _MiniTag(label: 'Spotify OAuth'),
-              _MiniTag(label: 'Quiz personal'),
-              _MiniTag(label: 'Top artists + tracks'),
-            ],
-          ),
+          const SizedBox(height: 16),
+          _LandingHero(controller: controller, theme: theme),
           const SizedBox(height: 18),
-          Text('Que tanto conoces tu propio Spotify?', style: theme.textTheme.headlineLarge),
-          const SizedBox(height: 14),
-          Text(
-            'Conecta tu cuenta y deja que la app convierta tus habitos musicales en un reto personal, raro y bastante compartible.',
-            style: theme.textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 24),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Tu algoritmo, convertido en quiz',
-                          style: theme.textTheme.titleLarge,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF16181C),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          'MVP',
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  const _FeatureLine(
-                    icon: Icons.person_search_rounded,
-                    title: 'Top artistas',
-                    subtitle: 'Identifica tus obsesiones recientes y de largo plazo.',
-                  ),
-                  const SizedBox(height: 12),
-                  const _FeatureLine(
-                    icon: Icons.library_music_rounded,
-                    title: 'Top canciones',
-                    subtitle: 'Cruza temas top con distractores creibles.',
-                  ),
-                  const SizedBox(height: 12),
-                  const _FeatureLine(
-                    icon: Icons.auto_graph_rounded,
-                    title: 'Generos y cruces',
-                    subtitle: 'Detecta patrones, overlaps y memoria musical real.',
-                  ),
-                ],
+          Row(
+            children: const [
+              Expanded(
+                child: _LandingStatCard(
+                  tone: Color(0xFF16181C),
+                  value: '1 login',
+                  label: 'Conecta Spotify',
+                  textColor: Colors.white,
+                ),
               ),
-            ),
+              SizedBox(width: 12),
+              Expanded(
+                child: _LandingStatCard(
+                  tone: Color(0xFFFFD9BF),
+                  value: '5 rounds',
+                  label: 'Quiz rapido',
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 18),
           if (controller.needsSetup) const _SetupCard(),
@@ -184,10 +136,186 @@ class _LandingView extends StatelessWidget {
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: null,
-            icon: const Icon(Icons.music_note_rounded),
-            label: const Text('El quiz se genera con tus datos'),
+            icon: const Icon(Icons.auto_awesome_rounded),
+            label: const Text('Historial real'),
           ),
           const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _LandingHero extends StatelessWidget {
+  const _LandingHero({
+    required this.controller,
+    required this.theme,
+  });
+
+  final SpotiquizController controller;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF16181C),
+        borderRadius: BorderRadius.circular(36),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x2216181C),
+            blurRadius: 30,
+            offset: Offset(0, 18),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -10,
+            top: -18,
+            child: Container(
+              width: 130,
+              height: 130,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Color(0xFF1ED760), Color(0x44FFFFFF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: -24,
+            bottom: -34,
+            child: Container(
+              width: 164,
+              height: 164,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [Color(0xFFFF7A59), Color(0x00FF7A59)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        'SPOTIQUIZ',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1ED760),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.multitrack_audio_rounded),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                Text(
+                  'Tu Spotify te conoce.\nLa pregunta es si tu tambien.',
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: Colors.white,
+                    fontSize: 36,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Conecta Spotify y responde.',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: const [
+                    _PillAccent(
+                      color: Color(0xFF1ED760),
+                      icon: Icons.person_search_rounded,
+                      label: 'Top artistas',
+                    ),
+                    _PillAccent(
+                      color: Color(0xFFFF7A59),
+                      icon: Icons.album_rounded,
+                      label: 'Top tracks',
+                    ),
+                    _PillAccent(
+                      color: Color(0xFFEED86C),
+                      icon: Icons.auto_graph_rounded,
+                      label: 'Cruces y generos',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                  ),
+                  child: Row(
+                    children: [
+                      const _BeatBars(),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Quiz instantaneo',
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              controller.needsSetup
+                                  ? 'Falta configurar Spotify.'
+                                  : 'Top artists, tracks y recientes.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -680,44 +808,79 @@ class _OptionTile extends StatelessWidget {
   }
 }
 
-class _FeatureLine extends StatelessWidget {
-  const _FeatureLine({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
+class _LandingStatCard extends StatelessWidget {
+  const _LandingStatCard({
+    required this.tone,
+    required this.value,
+    required this.label,
+    this.textColor = const Color(0xFF16181C),
   });
 
-  final IconData icon;
-  final String title;
-  final String subtitle;
+  final Color tone;
+  final String value;
+  final String label;
+  final Color textColor;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: const Color(0xFFEEF6EA),
-            borderRadius: BorderRadius.circular(16),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: tone,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: theme.textTheme.titleLarge?.copyWith(color: textColor),
           ),
-          child: Icon(icon),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: theme.textTheme.labelLarge),
-              const SizedBox(height: 4),
-              Text(subtitle, style: theme.textTheme.bodyMedium),
-            ],
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: theme.textTheme.bodyMedium?.copyWith(color: textColor),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PillAccent extends StatelessWidget {
+  const _PillAccent({
+    required this.color,
+    required this.icon,
+    required this.label,
+  });
+
+  final Color color;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: const Color(0xFF16181C)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: const Color(0xFF16181C),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -730,6 +893,48 @@ class _MiniTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Chip(label: Text(label));
+  }
+}
+
+class _BeatBars extends StatelessWidget {
+  const _BeatBars();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: const [
+        _BeatBar(height: 18, color: Color(0xFF1ED760)),
+        SizedBox(width: 4),
+        _BeatBar(height: 28, color: Color(0xFFFF7A59)),
+        SizedBox(width: 4),
+        _BeatBar(height: 22, color: Color(0xFFEED86C)),
+        SizedBox(width: 4),
+        _BeatBar(height: 34, color: Color(0xFF1ED760)),
+      ],
+    );
+  }
+}
+
+class _BeatBar extends StatelessWidget {
+  const _BeatBar({
+    required this.height,
+    required this.color,
+  });
+
+  final double height;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 8,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(999),
+      ),
+    );
   }
 }
 
