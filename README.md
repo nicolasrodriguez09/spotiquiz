@@ -1,17 +1,50 @@
-# spotiquiz
+# Spotiquiz
 
-A new Flutter project.
+Quiz personal hecho con Flutter usando los datos reales del usuario en Spotify.
 
-## Getting Started
+## Que hace este MVP
 
-This project is a starting point for a Flutter application.
+- Login con Spotify usando Authorization Code + PKCE.
+- Lee perfil, top artists, top tracks y recently played.
+- Genera un quiz de 5 preguntas con distractores razonables.
+- Muestra resultado final, nivel y resumen compartible.
+- Permite escuchar previews cuando Spotify devuelve `preview_url`.
 
-A few resources to get you started if this is your first Flutter project:
+## Configuracion de Spotify
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+1. Crea una app en Spotify for Developers.
+2. Agrega este Redirect URI en el dashboard:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```text
+spotiquiz://callback
+```
+
+3. Usa al menos estos scopes:
+
+```text
+user-read-private user-top-read user-read-recently-played
+```
+
+## Ejecutar
+
+```bash
+flutter pub get
+flutter run --dart-define=SPOTIFY_CLIENT_ID=tu_client_id
+```
+
+Si quieres cambiar el redirect URI por otro esquema, tambien debes actualizar la configuracion nativa en:
+
+- `android/app/src/main/AndroidManifest.xml`
+- `ios/Runner/Info.plist`
+
+## Estructura base
+
+- `lib/services`: autenticacion Spotify, consumo de API y generacion del quiz
+- `lib/controllers`: estado principal de la app
+- `lib/presentation`: flujo UI del MVP
+- `lib/models`: modelos Spotify y quiz
+
+## Notas
+
+- Este proyecto esta armado para un MVP movil.
+- En Windows, algunos plugins pueden requerir tener habilitado `Developer Mode` para que Flutter cree symlinks correctamente.
