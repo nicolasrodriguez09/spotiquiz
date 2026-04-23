@@ -16,6 +16,7 @@ enum SpotiquizViewState {
   authenticating,
   generatingQuiz,
   quiz,
+  stats,
   results,
   error,
 }
@@ -52,11 +53,13 @@ class SpotiquizController extends ChangeNotifier {
   String _loadingMessage = 'Preparando tu quiz...';
   int _currentIndex = 0;
   String? _playingPreviewUrl;
+  bool _quizFinished = false;
 
   SpotiquizViewState get viewState => _viewState;
   String? get errorMessage => _errorMessage;
   String get loadingMessage => _loadingMessage;
   QuizSession? get quizSession => _quizSession;
+  ListeningStatsSummary? get statsSummary => _quizSession?.statsSummary;
   bool get needsSetup => !SpotifyConfig.isConfigured;
   int get currentIndex => _currentIndex;
   String? get playingPreviewUrl => _playingPreviewUrl;
@@ -131,6 +134,8 @@ class SpotiquizController extends ChangeNotifier {
     return 'Saque $scoreLabel en Spotiquiz. Mi top artist es ${session.topArtistName} y mi genero dominante es ${session.dominantGenre}.';
   }
 
+  bool get quizFinished => _quizFinished;
+
   Future<void> startQuizFlow() async {
     if (needsSetup) {
       _errorMessage =
@@ -162,6 +167,7 @@ class SpotiquizController extends ChangeNotifier {
 
     final lastQuestionIndex = _quizSession!.questions.length - 1;
     if (_currentIndex >= lastQuestionIndex) {
+      _quizFinished = true;
       _setViewState(SpotiquizViewState.results);
       return;
     }
@@ -180,6 +186,7 @@ class SpotiquizController extends ChangeNotifier {
       _quizSession = _quizGenerator.generate(bundle);
       _selectedOptions.clear();
       _currentIndex = 0;
+      _quizFinished = false;
       _errorMessage = null;
       _setViewState(SpotiquizViewState.quiz);
     } catch (error) {
@@ -195,6 +202,27 @@ class SpotiquizController extends ChangeNotifier {
         subject: 'Mi resultado en Spotiquiz',
       ),
     );
+  }
+
+  void openStats() {
+    if (_quizSession == null) {
+      return;
+    }
+    _setViewState(SpotiquizViewState.stats);
+  }
+
+  void openQuiz() {
+    if (_quizSession == null) {
+      return;
+    }
+    _setViewState(SpotiquizViewState.quiz);
+  }
+
+  void openResults() {
+    if (_quizSession == null || !_quizFinished) {
+      return;
+    }
+    _setViewState(SpotiquizViewState.results);
   }
 
   Future<void> togglePreview(String? previewUrl) async {
@@ -251,9 +279,9 @@ class SpotiquizController extends ChangeNotifier {
 
       _loadingMessage = 'Buscando tus pistas mas recientes...';
       notifyListeners();
-      final recent = await _apiService.getRecentlyPlayed(accessToken).catchError(
-        (_) => <RecentlyPlayedItem>[],
-      );
+      final recent = await _apiService
+          .getRecentlyPlayed(accessToken, limit: 50)
+          .catchError((_) => <RecentlyPlayedItem>[]);
 
       _loadingMessage = 'Preparando tu reto musical...';
       notifyListeners();
@@ -274,6 +302,7 @@ class SpotiquizController extends ChangeNotifier {
       _quizSession = _quizGenerator.generate(_bundle!);
       _selectedOptions.clear();
       _currentIndex = 0;
+      _quizFinished = false;
       _setViewState(SpotiquizViewState.quiz);
     } catch (error) {
       _errorMessage = error.toString();
@@ -305,6 +334,7 @@ class SpotiquizController extends ChangeNotifier {
     _loadingMessage = 'Preparando tu quiz...';
     _currentIndex = 0;
     _playingPreviewUrl = null;
+    _quizFinished = false;
     _audioPlayer.stop();
   }
 

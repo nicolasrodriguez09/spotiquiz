@@ -49,11 +49,15 @@ class SpotifyUserProfile {
     required this.id,
     required this.displayName,
     this.imageUrl,
+    this.country,
+    this.product,
   });
 
   final String id;
   final String displayName;
   final String? imageUrl;
+  final String? country;
+  final String? product;
 
   factory SpotifyUserProfile.fromJson(Map<String, dynamic> json) {
     final images = json['images'] as List<dynamic>? ?? const [];
@@ -62,6 +66,8 @@ class SpotifyUserProfile {
       displayName:
           (json['display_name'] ?? json['id'] ?? 'Fan de Spotify') as String,
       imageUrl: images.isEmpty ? null : images.first['url'] as String?,
+      country: json['country'] as String?,
+      product: json['product'] as String?,
     );
   }
 }
@@ -103,6 +109,7 @@ class SpotifyTrack {
     required this.name,
     required this.artistNames,
     required this.artistIds,
+    required this.durationMs,
     this.imageUrl,
     this.previewUrl,
     this.externalUrl,
@@ -112,6 +119,7 @@ class SpotifyTrack {
   final String name;
   final List<String> artistNames;
   final List<String> artistIds;
+  final int durationMs;
   final String? imageUrl;
   final String? previewUrl;
   final String? externalUrl;
@@ -132,6 +140,7 @@ class SpotifyTrack {
       artistIds: artists
           .map((artist) => (artist as Map<String, dynamic>)['id'].toString())
           .toList(),
+      durationMs: (json['duration_ms'] as num? ?? 0).toInt(),
       imageUrl: albumImages.isEmpty ? null : albumImages.first['url'] as String?,
       previewUrl: json['preview_url'] as String?,
       externalUrl: (json['external_urls'] as Map<String, dynamic>?)?['spotify']

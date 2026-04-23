@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../controllers/spotiquiz_controller.dart';
 import '../core/spotify_config.dart';
 import '../models/quiz_models.dart';
+import '../models/spotify_models.dart';
 
 class SpotiquizScreen extends StatelessWidget {
   const SpotiquizScreen({super.key});
@@ -36,6 +37,9 @@ class SpotiquizScreen extends StatelessWidget {
                   SpotiquizViewState.generatingQuiz => _LoadingView(
                     key: const ValueKey('loading'),
                     message: controller.loadingMessage,
+                  ),
+                  SpotiquizViewState.stats => _StatsView(
+                    key: const ValueKey('stats'),
                   ),
                   SpotiquizViewState.quiz => _QuizView(
                     key: const ValueKey('quiz'),
@@ -110,7 +114,7 @@ class _LandingView extends StatelessWidget {
               Expanded(
                 child: _LandingStatCard(
                   tone: Color(0xFFFFD9BF),
-                  value: '5 rounds',
+                  value: '10 rounds',
                   label: 'Quiz rapido',
                 ),
               ),
@@ -426,9 +430,19 @@ class _QuizView extends StatelessWidget {
           _TopBar(
             title: 'Spotiquiz',
             subtitle: 'Pregunta ${controller.currentIndex + 1} de ${controller.totalQuestions}',
-            trailing: Text(
-              controller.scoreLabel,
-              style: theme.textTheme.titleLarge,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: controller.openStats,
+                  icon: const Icon(Icons.bar_chart_rounded),
+                  tooltip: 'Ver resumen',
+                ),
+                Text(
+                  controller.scoreLabel,
+                  style: theme.textTheme.titleLarge,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 18),
@@ -516,9 +530,19 @@ class _ResultsView extends StatelessWidget {
           _TopBar(
             title: 'Resultado',
             subtitle: session.profile.displayName,
-            trailing: IconButton(
-              onPressed: controller.signOut,
-              icon: const Icon(Icons.logout_rounded),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: controller.openStats,
+                  icon: const Icon(Icons.bar_chart_rounded),
+                  tooltip: 'Ver resumen',
+                ),
+                IconButton(
+                  onPressed: controller.signOut,
+                  icon: const Icon(Icons.logout_rounded),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 18),
@@ -610,6 +634,228 @@ class _ResultsView extends StatelessWidget {
           OutlinedButton(
             onPressed: controller.restartQuiz,
             child: const Text('Generar otro quiz'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatsView extends StatelessWidget {
+  const _StatsView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.watch<SpotiquizController>();
+    final session = controller.quizSession;
+    final stats = controller.statsSummary;
+    final theme = Theme.of(context);
+
+    if (session == null || stats == null) {
+      return const SizedBox.shrink();
+    }
+
+    return _ScreenShell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _TopBar(
+            title: 'Resumen',
+            subtitle: session.profile.displayName,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: controller.quizFinished
+                      ? controller.openResults
+                      : controller.openQuiz,
+                  icon: Icon(
+                    controller.quizFinished
+                        ? Icons.assignment_turned_in_rounded
+                        : Icons.quiz_rounded,
+                  ),
+                  tooltip: controller.quizFinished ? 'Ver resultado' : 'Volver al quiz',
+                ),
+                IconButton(
+                  onPressed: controller.signOut,
+                  icon: const Icon(Icons.logout_rounded),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: const Color(0xFF16181C),
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ultimo mes',
+                  style: theme.textTheme.labelLarge?.copyWith(color: Colors.white70),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '${session.profile.displayName} ranked',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Top artist: ${stats.topArtistShortTerm.name}',
+                  style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    if (session.profile.product case final product?)
+                      _MiniMetaPill(label: _prettyProduct(product)),
+                    if (session.profile.country case final country?)
+                      _MiniMetaPill(label: country),
+                    _MiniMetaPill(label: '${stats.recentPlaysAnalyzed} recientes'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  title: 'Top track',
+                  value: stats.topTrackShortTerm.name,
+                  subtitle: stats.topTrackShortTerm.subtitle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  title: 'Genero',
+                  value: _prettyLabel(stats.dominantGenre),
+                  subtitle: 'Dominante ahora',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  title: 'Duracion',
+                  value: '${stats.recentListeningMinutes} min',
+                  subtitle: 'Solo recientes analizados',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  title: 'Artistas',
+                  value: '${stats.distinctRecentArtists}',
+                  subtitle: 'Distintos en recientes',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          _RankSection<SpotifyArtist>(
+            title: 'Ranking de artistas',
+            subtitle: 'Ultimas 4 semanas',
+            items: stats.topArtistsShortTerm,
+            builder: (artist, index) => _RankedArtistTile(
+              rank: index + 1,
+              artist: artist,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _RankSection<SpotifyTrack>(
+            title: 'Ranking de tracks',
+            subtitle: 'Top actual',
+            items: stats.topTracksShortTerm,
+            builder: (track, index) => _RankedTrackTile(
+              rank: index + 1,
+              title: track.name,
+              subtitle: track.subtitle,
+              imageUrl: track.imageUrl,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _RankSection<GenreStat>(
+            title: 'Ranking de generos',
+            subtitle: 'Estimado desde tus artistas top',
+            items: stats.genreRanking,
+            builder: (genre, index) => _RankedTextTile(
+              rank: index + 1,
+              title: _prettyLabel(genre.genre),
+              subtitle: 'Score ${genre.score}',
+            ),
+          ),
+          const SizedBox(height: 16),
+          _RankSection<ArtistPlayStat>(
+            title: 'Artistas recientes',
+            subtitle: 'Frecuencia en recientes',
+            items: stats.recentArtistRanking,
+            builder: (artist, index) => _RankedCountTile(
+              rank: index + 1,
+              title: artist.name,
+              subtitle: '${artist.count} reproducciones',
+              imageUrl: artist.imageUrl,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _RankSection<TrackPlayStat>(
+            title: 'Tracks recientes',
+            subtitle: 'Mas repetidos en recientes',
+            items: stats.recentTrackRanking,
+            builder: (track, index) => _RankedCountTile(
+              rank: index + 1,
+              title: track.name,
+              subtitle: '${track.artistLabel} · ${track.count} veces',
+              imageUrl: track.imageUrl,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Datos extra', style: theme.textTheme.titleLarge),
+                  const SizedBox(height: 14),
+                  _InfoRow(
+                    label: 'Artista estable',
+                    value: stats.stableArtist?.name ?? 'No claro aun',
+                  ),
+                  _InfoRow(
+                    label: 'Estables top',
+                    value: stats.stableArtists.isEmpty
+                        ? 'Sin cruces claros'
+                        : stats.stableArtists.take(3).map((artist) => artist.name).join(', '),
+                  ),
+                  _InfoRow(
+                    label: 'Ultimo track',
+                    value: stats.mostRecentPlay?.track.name ?? 'Sin datos recientes',
+                  ),
+                  _InfoRow(
+                    label: 'Top 3 generos',
+                    value: stats.topGenres.map(_prettyLabel).join(', '),
+                  ),
+                  _InfoRow(
+                    label: 'Minutos escuchados',
+                    value: 'Spotify API no entrega ese total real',
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -723,6 +969,333 @@ class _TopBar extends StatelessWidget {
         ),
         ...trailingChildren,
       ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String value;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: theme.textTheme.bodyMedium),
+            const SizedBox(height: 10),
+            Text(value, style: theme.textTheme.titleLarge),
+            const SizedBox(height: 6),
+            Text(subtitle, style: theme.textTheme.bodyMedium),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RankSection<T> extends StatelessWidget {
+  const _RankSection({
+    required this.title,
+    required this.subtitle,
+    required this.items,
+    required this.builder,
+  });
+
+  final String title;
+  final String subtitle;
+  final List<T> items;
+  final Widget Function(T item, int index) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: theme.textTheme.titleLarge),
+            const SizedBox(height: 4),
+            Text(subtitle, style: theme.textTheme.bodyMedium),
+            const SizedBox(height: 14),
+            if (items.isEmpty)
+              Text('Sin datos suficientes', style: theme.textTheme.bodyLarge),
+            ...items.asMap().entries.map((entry) {
+              return Padding(
+                padding: EdgeInsets.only(bottom: entry.key == items.length - 1 ? 0 : 10),
+                child: builder(entry.value, entry.key),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RankedArtistTile extends StatelessWidget {
+  const _RankedArtistTile({
+    required this.rank,
+    required this.artist,
+  });
+
+  final int rank;
+  final SpotifyArtist artist;
+
+  @override
+  Widget build(BuildContext context) {
+    return _RankTileFrame(
+      rank: rank,
+      imageUrl: artist.imageUrl,
+      title: artist.name,
+      subtitle: artist.genres.isEmpty ? 'Sin genero' : _prettyLabel(artist.genres.first),
+    );
+  }
+}
+
+class _RankedTrackTile extends StatelessWidget {
+  const _RankedTrackTile({
+    required this.rank,
+    required this.title,
+    required this.subtitle,
+    this.imageUrl,
+  });
+
+  final int rank;
+  final String title;
+  final String subtitle;
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return _RankTileFrame(
+      rank: rank,
+      imageUrl: imageUrl,
+      title: title,
+      subtitle: subtitle,
+    );
+  }
+}
+
+class _RankedCountTile extends StatelessWidget {
+  const _RankedCountTile({
+    required this.rank,
+    required this.title,
+    required this.subtitle,
+    this.imageUrl,
+  });
+
+  final int rank;
+  final String title;
+  final String subtitle;
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return _RankTileFrame(
+      rank: rank,
+      imageUrl: imageUrl,
+      title: title,
+      subtitle: subtitle,
+    );
+  }
+}
+
+class _RankedTextTile extends StatelessWidget {
+  const _RankedTextTile({
+    required this.rank,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final int rank;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F2E7),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          _RankBadge(rank: rank),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: const Color(0xFF16181C),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF4D535C),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RankTileFrame extends StatelessWidget {
+  const _RankTileFrame({
+    required this.rank,
+    required this.title,
+    required this.subtitle,
+    this.imageUrl,
+  });
+
+  final int rank;
+  final String title;
+  final String subtitle;
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F2E7),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          _RankBadge(rank: rank),
+          const SizedBox(width: 12),
+          _AvatarArt(
+            imageUrl: imageUrl,
+            size: 46,
+            icon: Icons.music_note_rounded,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: const Color(0xFF16181C),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF4D535C),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RankBadge extends StatelessWidget {
+  const _RankBadge({required this.rank});
+
+  final int rank;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: rank == 1 ? const Color(0xFF1ED760) : const Color(0xFF16181C),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Center(
+        child: Text(
+          '#$rank',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniMetaPill extends StatelessWidget {
+  const _MiniMetaPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(label, style: theme.textTheme.bodyMedium),
+          ),
+          Expanded(
+            child: Text(value, style: theme.textTheme.bodyLarge),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -935,6 +1508,26 @@ class _BeatBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
     );
+  }
+}
+
+String _prettyLabel(String value) {
+  if (value.isEmpty) {
+    return value;
+  }
+  return '${value[0].toUpperCase()}${value.substring(1)}';
+}
+
+String _prettyProduct(String value) {
+  switch (value) {
+    case 'premium':
+      return 'Premium';
+    case 'free':
+      return 'Free';
+    case 'open':
+      return 'Open';
+    default:
+      return _prettyLabel(value);
   }
 }
 

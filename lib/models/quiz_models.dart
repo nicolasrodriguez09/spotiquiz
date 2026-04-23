@@ -74,6 +74,80 @@ class QuizDataBundle {
   final List<RecentlyPlayedItem> recentlyPlayed;
 }
 
+class ListeningStatsSummary {
+  ListeningStatsSummary({
+    required this.topArtistShortTerm,
+    required this.topTrackShortTerm,
+    required this.dominantGenre,
+    required this.topGenres,
+    required this.genreRanking,
+    required this.topArtistsShortTerm,
+    required this.topTracksShortTerm,
+    required this.recentArtistRanking,
+    required this.recentTrackRanking,
+    required this.stableArtists,
+    required this.recentPlaysAnalyzed,
+    required this.distinctRecentArtists,
+    required this.distinctRecentTracks,
+    required this.recentListeningMinutes,
+    this.mostRecentPlay,
+    this.stableArtist,
+  });
+
+  final SpotifyArtist topArtistShortTerm;
+  final SpotifyTrack topTrackShortTerm;
+  final String dominantGenre;
+  final List<String> topGenres;
+  final List<GenreStat> genreRanking;
+  final List<SpotifyArtist> topArtistsShortTerm;
+  final List<SpotifyTrack> topTracksShortTerm;
+  final List<ArtistPlayStat> recentArtistRanking;
+  final List<TrackPlayStat> recentTrackRanking;
+  final List<SpotifyArtist> stableArtists;
+  final int recentPlaysAnalyzed;
+  final int distinctRecentArtists;
+  final int distinctRecentTracks;
+  final int recentListeningMinutes;
+  final RecentlyPlayedItem? mostRecentPlay;
+  final SpotifyArtist? stableArtist;
+}
+
+class GenreStat {
+  GenreStat({
+    required this.genre,
+    required this.score,
+  });
+
+  final String genre;
+  final int score;
+}
+
+class ArtistPlayStat {
+  ArtistPlayStat({
+    required this.name,
+    required this.count,
+    this.imageUrl,
+  });
+
+  final String name;
+  final int count;
+  final String? imageUrl;
+}
+
+class TrackPlayStat {
+  TrackPlayStat({
+    required this.name,
+    required this.artistLabel,
+    required this.count,
+    this.imageUrl,
+  });
+
+  final String name;
+  final String artistLabel;
+  final int count;
+  final String? imageUrl;
+}
+
 class QuizSession {
   QuizSession({
     required this.profile,
@@ -81,6 +155,7 @@ class QuizSession {
     required this.topTracksSnapshot,
     required this.dominantGenre,
     required this.topArtistName,
+    required this.statsSummary,
   });
 
   final SpotifyUserProfile profile;
@@ -88,4 +163,5 @@ class QuizSession {
   final List<SpotifyTrack> topTracksSnapshot;
   final String dominantGenre;
   final String topArtistName;
+  final ListeningStatsSummary statsSummary;
 }
