@@ -12,23 +12,36 @@ Quiz personal hecho con Flutter usando los datos reales del usuario en Spotify.
 
 ## Configuracion de Spotify
 
-1. Crea una app en Spotify for Developers.
-2. Agrega este Redirect URI en el dashboard:
+Esta entrega ya incluye un Client ID por defecto para que puedas ejecutar la app
+sin argumentos extra.
+
+En Spotify for Developers, la app debe tener este Redirect URI:
 
 ```text
 spotiquiz://callback
 ```
 
-3. Usa al menos estos scopes:
+Y estos scopes:
 
 ```text
 user-read-private user-top-read user-read-recently-played
 ```
 
+Nota: si la app de Spotify esta en Development Mode, Spotify solo permite usarla
+a los usuarios agregados en el dashboard de la app. Para que cualquier cuenta de
+Spotify pueda entrar sin estar en esa lista, la app debe estar en Extended Quota
+Mode.
+
 ## Ejecutar
 
 ```bash
 flutter pub get
+flutter run
+```
+
+Opcionalmente puedes usar otro Client ID sin cambiar el codigo:
+
+```bash
 flutter run --dart-define=SPOTIFY_CLIENT_ID=tu_client_id
 ```
 

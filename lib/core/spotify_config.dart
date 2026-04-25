@@ -1,5 +1,8 @@
 class SpotifyConfig {
-  static const clientId = String.fromEnvironment('SPOTIFY_CLIENT_ID');
+  static const clientId = String.fromEnvironment(
+    'SPOTIFY_CLIENT_ID',
+    defaultValue: 'f465a4bd24c344f7bf1e540f0868c48d',
+  );
   static const redirectUri = String.fromEnvironment(
     'SPOTIFY_REDIRECT_URI',
     defaultValue: 'spotiquiz://callback',
